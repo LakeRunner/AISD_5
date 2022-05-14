@@ -1,11 +1,6 @@
 package ru.vsu.cs.course1.tree;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-
-import org.jfree.graphics2d.svg.SVGGraphics2D;
-import org.jfree.graphics2d.svg.SVGUtils;
 import ru.vsu.cs.util.DrawUtils;
 
 /**
@@ -13,12 +8,13 @@ import ru.vsu.cs.util.DrawUtils;
  */
 public class BinaryTreePainter {
 
-    public static final int TREE_NODE_WIDTH = 70,
-            TREE_NODE_HEIGHT = 30,
-            HORIZONTAL_INDENT = 10,
-            VERTICAL_INDENT = 50;
+    public static final int TREE_NODE_WIDTH = 130,
+            TREE_NODE_HEIGHT = 60,
+            HORIZONTAL_INDENT = 19,
+            VERTICAL_INDENT = 93,
+            ROUNDING = 70;
 
-    public static final Font FONT = new Font("Microsoft Sans Serif", Font.PLAIN, 20);
+    public static final Font FONT = new Font("Comic Sans MS", Font.BOLD, 45);
 
     private static class NodeDrawResult {
 
@@ -33,8 +29,7 @@ public class BinaryTreePainter {
         }
     }
 
-    private static <T extends Comparable<T>> NodeDrawResult paint(BinaryTree.TreeNode<T> node, Graphics2D g2d,
-                                                                  int x, int y) {
+    private static <T extends Comparable<T>> NodeDrawResult paint(BinaryTree.TreeNode<T> node, Graphics2D g2d, int x, int y) {
         if (node == null) {
             return null;
         }
@@ -51,20 +46,21 @@ public class BinaryTreePainter {
             thisX = (leftResult.center + rightResult.center) / 2 - TREE_NODE_WIDTH / 2;
         }
 
-        Color color = node.getColor() == Color.BLACK ? Color.WHITE : node.getColor();
-        g2d.setColor(color);
-        g2d.fillRect(thisX, y, TREE_NODE_WIDTH, TREE_NODE_HEIGHT);
-        g2d.setColor(Color.BLACK);
+        g2d.setColor(new Color(170, 50, 255));
+        g2d.setStroke(new BasicStroke(10));
+        g2d.fillRoundRect(thisX, y, TREE_NODE_WIDTH, TREE_NODE_HEIGHT, ROUNDING, ROUNDING);
         if (leftResult != null) {
-            g2d.drawLine(thisX + TREE_NODE_WIDTH / 2, y + TREE_NODE_HEIGHT, leftResult.center, y + TREE_NODE_HEIGHT + VERTICAL_INDENT);
+            g2d.setColor(new Color(0, 255, 0));
+            g2d.drawLine(thisX + TREE_NODE_WIDTH / 2, y + TREE_NODE_HEIGHT + 5, leftResult.center, y + TREE_NODE_HEIGHT + VERTICAL_INDENT - 2);
         }
         if (rightResult != null) {
-            g2d.drawLine(thisX + TREE_NODE_WIDTH / 2, y + TREE_NODE_HEIGHT, rightResult.center, y + TREE_NODE_HEIGHT + VERTICAL_INDENT);
+            g2d.setColor(new Color(0, 255, 0));
+            g2d.drawLine(thisX + TREE_NODE_WIDTH / 2, y + TREE_NODE_HEIGHT + 5, rightResult.center, y + TREE_NODE_HEIGHT + VERTICAL_INDENT - 2);
         }
-        g2d.drawRect(thisX, y, TREE_NODE_WIDTH, TREE_NODE_HEIGHT);
-        g2d.setColor(DrawUtils.getContrastColor(color));
+        g2d.setColor(new Color(1, 0, 255));
+        g2d.drawRoundRect(thisX, y, TREE_NODE_WIDTH, TREE_NODE_HEIGHT, ROUNDING, ROUNDING);
+        g2d.setColor(new Color(255, 255, 255));
         DrawUtils.drawStringInCenter(g2d, FONT, node.getValue().toString(), thisX, y, TREE_NODE_WIDTH, TREE_NODE_HEIGHT);
-
         int maxX = Math.max((leftResult == null) ? 0 : leftResult.maxX, (rightResult == null) ? 0 : rightResult.maxX);
         int maxY = Math.max((leftResult == null) ? 0 : leftResult.maxY, (rightResult == null) ? 0 : rightResult.maxY);
         return new NodeDrawResult(
@@ -88,41 +84,5 @@ public class BinaryTreePainter {
 
         NodeDrawResult rootResult = paint(tree.getRoot(), g2d, HORIZONTAL_INDENT, HORIZONTAL_INDENT);
         return new Dimension((rootResult == null) ? 0 : rootResult.maxX, (rootResult == null) ? 0 : rootResult.maxY + HORIZONTAL_INDENT);
-    }
-
-    /**
-     * Сохранение изображения дерева в SVG-файл
-     *
-     * @param tree Двоичное дерево
-     * @param filename Имя файла
-     * @param backgroundTransparent Оставлять ли прозрачным фон
-     * @throws IOException Возможное исключение
-     */
-    public static <T extends Comparable<T>> void saveIntoFile(BinaryTree<T> tree, String filename, boolean backgroundTransparent)
-            throws IOException {
-        // первый раз рисуем, только чтобы размеры изображения определить
-        SVGGraphics2D g2 = new SVGGraphics2D(1, 1);
-        Dimension size = BinaryTreePainter.paint(tree, g2);
-        // второй раз рисуем непосредственно для сохранения
-        g2 = new SVGGraphics2D(size.width, size.height);
-        if (!backgroundTransparent) {
-            g2.setColor(Color.WHITE);
-            g2.fillRect(0, 0, size.width, size.height);
-        }
-        BinaryTreePainter.paint(tree, g2);
-
-        SVGUtils.writeToSVG(new File(filename), g2.getSVGElement());
-    }
-
-    /**
-     * Сохранение изображения дерева в SVG-файл (с белым фоном)
-     *
-     * @param tree Двоичное дерево
-     * @param filename Имя файла
-     * @throws IOException Возможное исключение
-     */
-    public static <T extends Comparable<T>> void saveIntoFile(BinaryTree<T> tree, String filename)
-            throws IOException {
-        saveIntoFile(tree, filename, false);
     }
 }

@@ -1,11 +1,50 @@
 package ru.vsu.cs.course1.tree;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
-import java.util.Stack;
 
 public class BinaryTreeAlgorithms {
+    public static class PairOfNodes<T> {
+        private final T first;
+        private final T second;
+        private final int firstLevel;
+        private final int secondLevel;
+
+        public PairOfNodes(T first, int firstLevel, T second, int secondLevel) {
+            this.first = first;
+            this.second = second;
+            this.firstLevel = firstLevel;
+            this.secondLevel = secondLevel;
+        }
+
+        public PairOfNodes() {
+            this(null, -1, null, -1);
+        }
+
+        public T getFirst() {
+            return first;
+        }
+
+        public T getSecond() {
+            return second;
+        }
+
+        public int getFirstLevel() {
+            return firstLevel;
+        }
+
+        public int getSecondLevel() {
+            return secondLevel;
+        }
+    }
+
+    @FunctionalInterface
+    public interface MyVisitor<T> {
+        void visit(BinaryTree.TreeNode<T> node, int level);
+    }
+
 
     @FunctionalInterface
     public interface Visitor<T> {
@@ -27,7 +66,6 @@ public class BinaryTreeAlgorithms {
      * @param visitor Посетитель
      */
     public static <T> void preOrderVisit(BinaryTree.TreeNode<T> treeNode, Visitor<T> visitor) {
-        // данный класс нужен только для того, чтобы "спрятать" его метод (c 3-мя параметрами)
         class Inner {
             void preOrderVisit(BinaryTree.TreeNode<T> node, Visitor<T> visitor, int level) {
                 if (node == null) {
@@ -38,43 +76,7 @@ public class BinaryTreeAlgorithms {
                 preOrderVisit(node.getRight(), visitor, level + 1);
             }
         }
-        // класс приходится создавать, т.к. статические методы в таких класс не поддерживаются
         new Inner().preOrderVisit(treeNode, visitor, 0);
-    }
-
-    /**
-     * Обход поддерева с вершиной в данном узле
-     * в виде итератора в прямом/NLR порядке
-     * (предполагается, что в процессе обхода дерево не меняется)
-     *
-     * @param treeNode Узел поддерева, которое требуется "обойти"
-     * @return Итератор
-     */
-    public static <T> Iterable<T> preOrderValues(BinaryTree.TreeNode<T> treeNode) {
-        return () -> {
-            Stack<BinaryTree.TreeNode<T>> stack = new Stack<>();
-            stack.push(treeNode);
-
-            return new Iterator<T>() {
-                @Override
-                public boolean hasNext() {
-                    return stack.size() > 0;
-                }
-
-                @Override
-                public T next() {
-                    BinaryTree.TreeNode<T> node = stack.pop();
-                    if (node.getRight() != null) {
-                        stack.push(node.getRight());
-                    }
-                    if (node.getLeft() != null) {
-                        stack.push(node.getLeft());
-                    }
-                    return node.getValue();
-                }
-
-            };
-        };
     }
 
     /**
@@ -85,7 +87,6 @@ public class BinaryTreeAlgorithms {
      * @param visitor Посетитель
      */
     public static <T> void inOrderVisit(BinaryTree.TreeNode<T> treeNode, Visitor<T> visitor) {
-        // данный класс нужен только для того, чтобы "спрятать" его метод (c 3-мя параметрами)
         class Inner {
             void inOrderVisit(BinaryTree.TreeNode<T> node, Visitor<T> visitor, int level) {
                 if (node == null) {
@@ -96,48 +97,7 @@ public class BinaryTreeAlgorithms {
                 inOrderVisit(node.getRight(), visitor, level + 1);
             }
         }
-        // класс приходится создавать, т.к. статические методы в таких класс не поддерживаются
         new Inner().inOrderVisit(treeNode, visitor, 0);
-    }
-
-    /**
-     * Обход поддерева с вершиной в данном узле в виде итератора в
-     * симметричном/поперечном/центрированном/LNR порядке (предполагается, что в
-     * процессе обхода дерево не меняется)
-     *
-     * @param treeNode Узел поддерева, которое требуется "обойти"
-     * @return Итератор
-     */
-    public static <T> Iterable<T> inOrderValues(BinaryTree.TreeNode<T> treeNode) {
-        return () -> {
-            Stack<BinaryTree.TreeNode<T>> stack = new Stack<>();
-            BinaryTree.TreeNode<T> node = treeNode;
-            while (node != null) {
-                stack.push(node);
-                node = node.getLeft();
-            }
-
-            return new Iterator<T>() {
-                @Override
-                public boolean hasNext() {
-                    return !stack.isEmpty();
-                }
-
-                @Override
-                public T next() {
-                    BinaryTree.TreeNode<T> node = stack.pop();
-                    T result = node.getValue();
-                    if (node.getRight() != null) {
-                        node = node.getRight();
-                        while (node != null) {
-                            stack.push(node);
-                            node = node.getLeft();
-                        }
-                    }
-                    return result;
-                }
-            };
-        };
     }
 
     /**
@@ -148,7 +108,6 @@ public class BinaryTreeAlgorithms {
      * @param visitor Посетитель
      */
     public static <T> void postOrderVisit(BinaryTree.TreeNode<T> treeNode, Visitor<T> visitor) {
-        // данный класс нужен только для того, чтобы "спрятать" его метод (c 3-мя параметрами)
         class Inner {
             void postOrderVisit(BinaryTree.TreeNode<T> node, Visitor<T> visitor, int level) {
                 if (node == null) {
@@ -159,57 +118,12 @@ public class BinaryTreeAlgorithms {
                 visitor.visit(node.getValue(), level);
             }
         }
-        // класс приходится создавать, т.к. статические методы в таких класс не поддерживаются
         new Inner().postOrderVisit(treeNode, visitor, 0);
     }
 
     /**
-     * Обход поддерева с вершиной в данном узле в виде итератора в обратном/LRN порядке
-     * (предполагается, что в процессе обхода дерево не меняется)
-     *
-     * @param treeNode Узел поддерева, которое требуется "обойти"
-     * @return Итератор
-     */
-    public static <T> Iterable<T> postOrderValues(BinaryTree.TreeNode<T> treeNode) {
-        return () -> {
-            // Реализация TreeNode<T>, где left = right = null
-            BinaryTree.TreeNode<T> emptyNode = () -> null;
-
-            Stack<BinaryTree.TreeNode<T>> stack = new Stack<>();
-            Stack<T> valuesStack = new Stack<>();
-            stack.push(treeNode);
-
-            return new Iterator<T>() {
-                @Override
-                public boolean hasNext() {
-                    return stack.size() > 0;
-                }
-
-                @Override
-                public T next() {
-                    for (BinaryTree.TreeNode<T> node = stack.pop(); node != emptyNode; node = stack.pop()) {
-                        if (node.getRight() == null && node.getLeft() == null) {
-                            return node.getValue();
-                        }
-                        valuesStack.push(node.getValue());
-                        stack.push(emptyNode);
-                        if (node.getRight() != null) {
-                            stack.push(node.getRight());
-                        }
-                        if (node.getLeft() != null) {
-                            stack.push(node.getLeft());
-                        }
-                    }
-                    return valuesStack.pop();
-                }
-            };
-        };
-    }
-
-
-    /**
      *  Класс для хранения узла дерева вместе с его уровнем, нужен для методов
-     *  {@link #byLevelVisit(BinaryTree.TreeNode, Visitor)} и {@link #byLevelValues(BinaryTree.TreeNode)}
+     *  {@link #byLevelVisit(BinaryTree.TreeNode, Visitor)}
      *
      * @param <T>
      */
@@ -244,73 +158,49 @@ public class BinaryTreeAlgorithms {
         }
     }
 
-    /**
-     * Обход поддерева с вершиной в данном узле в виде итератора по уровням (обход в ширину)
-     * (предполагается, что в процессе обхода дерево не меняется)
-     *
-     * @param treeNode Узел поддерева, которое требуется "обойти"
-     * @return Итератор
-     */
-    public static <T> Iterable<T> byLevelValues(BinaryTree.TreeNode<T> treeNode) {
-        return () -> {
-            Queue<QueueItem<T>> queue = new LinkedList<>();
-            queue.add(new QueueItem<>(treeNode, 0));
-
-            return new Iterator<T>() {
-                @Override
-                public boolean hasNext() {
-                    return queue.size() > 0;
-                }
-
-                @Override
-                public T next() {
-                    QueueItem<T> item = queue.poll();
-                    if (item == null) {
-                        // такого быть не должно, но на вский случай
-                        return null;
-                    }
-                    if (item.node.getLeft() != null) {
-                        queue.add(new QueueItem<>(item.node.getLeft(), item.level + 1));
-                    }
-                    if (item.node.getRight() != null) {
-                        queue.add(new QueueItem<>(item.node.getRight(), item.level + 1));
-                    }
-                    return item.node.getValue();
-                }
-            };
-        };
-    }
-
-
-    /**
-     * Представление дерева в виде строки в скобочной нотации
-     *
-     * @param treeNode Узел поддерева, которое требуется представить в виже скобочной нотации
-     * @return дерево в виде строки
-     */
-    public static <T> String toBracketStr(BinaryTree.TreeNode<T> treeNode) {
-        // данный класс нужен только для того, чтобы "спрятать" его метод (c 2-мя параметрами)
-        class Inner {
-            void printTo(BinaryTree.TreeNode<T> node, StringBuilder sb) {
-                if (node == null) {
-                    return;
-                }
-                sb.append(node.getValue());
-                if (node.getLeft() != null || node.getRight() != null) {
-                    sb.append(" (");
-                    printTo(node.getLeft(), sb);
-                    if (node.getRight() != null) {
-                        sb.append(", ");
-                        printTo(node.getRight(), sb);
-                    }
-                    sb.append(")");
+    public static <T> List<PairOfNodes<T>> findPares(BinaryTree.TreeNode<T> root) {
+        List<PairOfNodes<T>> pairs = new ArrayList<>();
+        List<BinaryTree.TreeNode<T>> roots = new ArrayList<>();
+        List<Integer> levels = new ArrayList<>();
+        rootsTraversal(root, roots, levels, 0);
+        roots.remove(0);
+        levels.remove(0);
+        for (int i = 0; i < roots.size() - 1; i++) {
+            for (int j = i + 1; j < roots.size(); j++) {
+                if (isSubtreesEqual(roots.get(i), roots.get(j))) {
+                    pairs.add(new PairOfNodes<>(roots.get(i).getValue(), levels.get(i), roots.get(j).getValue(), levels.get(j)));
                 }
             }
         }
-        StringBuilder sb = new StringBuilder();
-        // класс приходится создавать, т.к. статические методы в таких класс не поддерживаются
-        new Inner().printTo(treeNode, sb);
+        return pairs;
+    }
 
-        return sb.toString();
+    private static <T> void rootsTraversal(BinaryTree.TreeNode<T> node, List<BinaryTree.TreeNode<T>> roots, List<Integer> levels, int level) {
+        if (node.getLeft() == null && node.getRight() == null) {
+            return;
+        }
+        roots.add(node);
+        levels.add(level);
+        if (node.getLeft() != null) {
+            rootsTraversal(node.getLeft(), roots, levels, level + 1);
+        }
+        if (node.getRight() != null) {
+            rootsTraversal(node.getRight(), roots, levels, level + 1);
+        }
+    }
+
+    private static <T> boolean isSubtreesEqual(BinaryTree.TreeNode<T> first, BinaryTree.TreeNode<T> second) {
+        if (first == null && second == null) {
+            return true;
+        }
+        if (first != null && second != null) {
+            if (first.hasChild() || second.hasChild()) {
+                return isSubtreesEqual(first.getLeft(), second.getLeft()) && isSubtreesEqual(first.getRight(), second.getRight());
+            } else {
+                return first.getValue() == second.getValue();
+            }
+        } else {
+            return false;
+        }
     }
 }

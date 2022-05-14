@@ -1,10 +1,6 @@
 package ru.vsu.cs.course1.tree;
 
 import java.awt.Color;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
 
 /**
  * Интерфейс для двоичного дерева с реализацияей по умолчанию различных обходов
@@ -12,14 +8,14 @@ import java.util.Stack;
  *
  * @param <T>
  */
-public interface BinaryTree<T> extends Iterable<T> {
+public interface BinaryTree<T> {
 
     /**
      * Интерфейс для описания узла двоичного дерева
      *
      * @param <T>
      */
-    interface TreeNode<T> extends Iterable<T> {
+    interface TreeNode<T> {
 
         /**
          * @return Значение в узле дерева
@@ -47,24 +43,8 @@ public interface BinaryTree<T> extends Iterable<T> {
             return Color.BLACK;
         }
 
-        /**
-         * Реализация Iterable&lt;T&gt;
-         *
-         * @return Итератор
-         */
-        @Override
-        default Iterator<T> iterator() {
-            return BinaryTreeAlgorithms.inOrderValues(this).iterator();
-        }
+        boolean hasChild();
 
-        /**
-         * Представление поддерева в виде строки в скобочной нотации
-         *
-         * @return дерево в виде строки
-         */
-        default String toBracketStr() {
-            return BinaryTreeAlgorithms.toBracketStr(this);
-        }
     }
 
     /**
@@ -72,24 +52,4 @@ public interface BinaryTree<T> extends Iterable<T> {
      */
     TreeNode<T> getRoot();
 
-
-    /**
-     * Реализация Iterable&lt;T&gt;
-     *
-     * @return Итератор
-     */
-    @Override
-    default Iterator<T> iterator() {
-        return this.getRoot().iterator();
-    }
-
-
-    /**
-     * Представление дерева в виде строки в скобочной нотации
-     *
-     * @return дерево в виде строки
-     */
-    default String toBracketStr() {
-        return this.getRoot().toBracketStr();
-    }
 }

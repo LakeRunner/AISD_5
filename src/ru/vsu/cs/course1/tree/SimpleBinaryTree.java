@@ -36,6 +36,11 @@ public class SimpleBinaryTree<T> implements BinaryTree<T> {
         public TreeNode<T> getRight() {
             return right;
         }
+
+        @Override
+        public boolean hasChild() {
+            return left != null || right != null;
+        }
     }
 
     protected SimpleTreeNode root = null;
